@@ -1,12 +1,12 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Pong!</title> 
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/> 
-  <link href="pong.css" media="screen, print" rel="stylesheet" type="text/css" /> 
-</head> 
- 
-<body> 
+  <title>Pong!</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="pong.css" media="screen, print" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
 
   <div id="sidebar">
 
@@ -66,8 +66,8 @@
       Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
     </div>
   </canvas>
-
-  <script src="game.js" type="text/javascript"></script> 
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" type="text/javascript"></script>
+  <script src="game.js" type="text/javascript"></script>
   <script src="pong.js" type="text/javascript"></script>
   <script type="text/javascript">
   Game.ready(function() {
@@ -85,13 +85,25 @@
       predictions: predictions.checked
     });
 
-    Game.addEvent(sound,       'change', function() { pong.enableSound(sound.checked);           });
-    Game.addEvent(stats,       'change', function() { pong.showStats(stats.checked);             });
-    Game.addEvent(footprints,  'change', function() { pong.showFootprints(footprints.checked);   });
-    Game.addEvent(predictions, 'change', function() { pong.showPredictions(predictions.checked); });
+    Game.addEvent(sound,       'change', function() {
+      pong.enableSound(sound.checked);
+    });
 
+    Game.addEvent(stats,       'change', function() {
+      pong.showStats(stats.checked);
+    });
+
+    Game.addEvent(footprints,  'change', function() {
+      pong.showFootprints(footprints.checked);
+    });
+
+    Game.addEvent(predictions, 'change', function() {
+      pong.showPredictions(predictions.checked);
+    });
   });
   </script>
 
-</body> 
+  <pre style="display: none;"><code id="stat-table"></code></pre>
+  <div id="img-table" style="display: none;"></div>
+</body>
 </html>

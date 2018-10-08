@@ -63,6 +63,7 @@ Pong = {
       this.images      = images;
       this.playing     = false;
       this.scores      = [0, 0];
+      this.currentFrame = 0;
       this.menu        = Object.construct(Pong.Menu,   this);
       this.court       = Object.construct(Pong.Court,  this);
       this.leftPaddle  = Object.construct(Pong.Paddle, this);
@@ -85,16 +86,26 @@ Pong = {
       this.rightPaddle.setAuto(numPlayers < 2, this.level(1));
       this.ball.reset();
       this.runner.hideCursor();
+
+      $("#stat-table").empty();
+      $("#img-table").empty();
+      this.ball.hitFrames = [];
+      this.currentFrame = 0
     }
   },
 
   stop: function(ask) {
     if (this.playing) {
-      if (!ask || this.runner.confirm('Abandon game in progress ?')) {
+      // if (!ask || this.runner.confirm('Abandon game in progress ?')) {
+      if (true) {
         this.playing = false;
         this.leftPaddle.setAuto(false);
         this.rightPaddle.setAuto(false);
         this.runner.showCursor();
+
+        // append the images and metadata to a new window
+        var w = window.open();
+        $(w.document).html(this.ball.hitFrames);
       }
     }
   },
@@ -142,8 +153,15 @@ Pong = {
     this.court.draw(ctx, this.scores[0], this.scores[1]);
     this.leftPaddle.draw(ctx);
     this.rightPaddle.draw(ctx);
-    if (this.playing)
+
+    if (this.playing) {
+      this.currentFrame++;
+
       this.ball.draw(ctx);
+      $('canvas')[0].toBlob((blob) => {
+          saveAs(blob, "pong_" + this.currentFrame + ".jpg");
+      }, 'image/jpeg', 1.0);
+    }
     else
       this.menu.draw(ctx);
   },
@@ -170,7 +188,9 @@ Pong = {
     }
   },
 
-  showStats:       function(on) { this.cfg.stats = on; },
+  showStats:       function(on) {
+    this.cfg.stats = on;
+  },
   showFootprints:  function(on) { this.cfg.footprints = on; this.ball.footprints = []; },
   showPredictions: function(on) { this.cfg.predictions = on; },
   enableSound:     function(on) { this.cfg.sound = on; },
@@ -254,8 +274,8 @@ Pong = {
       this.walls.push({x: 0, y: h - ww, width: w, height: ww});
       var nMax = (h / (ww*2));
       for(var n = 0 ; n < nMax ; n++) { // draw dashed halfway line
-        this.walls.push({x: (w / 2) - (ww / 2), 
-                         y: (ww / 2) + (ww * 2 * n), 
+        this.walls.push({x: (w / 2) - (ww / 2),
+                         y: (ww / 2) + (ww * 2 * n),
                          width: ww, height: ww});
       }
 
@@ -471,6 +491,7 @@ Pong = {
       this.maxY    = pong.height - pong.cfg.wallWidth - this.radius;
       this.speed   = (this.maxX - this.minX) / pong.cfg.ballSpeed;
       this.accel   = pong.cfg.ballAccel;
+      this.hitFrames = [];
     },
 
     reset: function(playerNo) {
@@ -491,8 +512,13 @@ Pong = {
     setdir: function(dx, dy) {
       this.dxChanged = ((this.dx < 0) != (dx < 0)); // did horizontal direction change
       this.dyChanged = ((this.dy < 0) != (dy < 0)); // did vertical direction change
+
       this.dx = dx;
       this.dy = dy;
+
+      if (this.dxChanged && this.dx > 0) {
+        this.hitFrames.push(this.pong.currentFrame);
+      }
     },
 
     footprint: function() {
@@ -598,35 +624,35 @@ Pong = {
     ballIntercept: function(ball, rect, nx, ny) {
       var pt;
       if (nx < 0) {
-        pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-                                   rect.right  + ball.radius, 
-                                   rect.top    - ball.radius, 
-                                   rect.right  + ball.radius, 
-                                   rect.bottom + ball.radius, 
+        pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny,
+                                   rect.right  + ball.radius,
+                                   rect.top    - ball.radius,
+                                   rect.right  + ball.radius,
+                                   rect.bottom + ball.radius,
                                    "right");
       }
       else if (nx > 0) {
-        pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-                                   rect.left   - ball.radius, 
-                                   rect.top    - ball.radius, 
-                                   rect.left   - ball.radius, 
+        pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny,
+                                   rect.left   - ball.radius,
+                                   rect.top    - ball.radius,
+                                   rect.left   - ball.radius,
                                    rect.bottom + ball.radius,
                                    "left");
       }
       if (!pt) {
         if (ny < 0) {
-          pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-                                     rect.left   - ball.radius, 
-                                     rect.bottom + ball.radius, 
-                                     rect.right  + ball.radius, 
+          pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny,
+                                     rect.left   - ball.radius,
+                                     rect.bottom + ball.radius,
+                                     rect.right  + ball.radius,
                                      rect.bottom + ball.radius,
                                      "bottom");
         }
         else if (ny > 0) {
-          pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-                                     rect.left   - ball.radius, 
-                                     rect.top    - ball.radius, 
-                                     rect.right  + ball.radius, 
+          pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny,
+                                     rect.left   - ball.radius,
+                                     rect.top    - ball.radius,
+                                     rect.right  + ball.radius,
                                      rect.top    - ball.radius,
                                      "top");
         }
